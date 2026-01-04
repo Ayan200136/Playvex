@@ -1265,6 +1265,8 @@
       await fn.call(document);
     };
 
+    let hudBar = null;
+
     const isTheater = () => document.body.classList.contains("game-theater");
     const enterTheater = () => {
       document.body.classList.add("game-theater");
@@ -1273,6 +1275,9 @@
       document.body.classList.add("noscroll");
       lockPageScroll();
       updateViewportUnits();
+      if (hudBar && typeof hudBar._pvxSetVisible === "function") {
+        hudBar._pvxSetVisible(true, { autoHideMs: 1400 });
+      }
     };
 
     const exitTheater = () => {
@@ -1282,6 +1287,9 @@
       document.body.classList.remove("noscroll");
       unlockPageScroll();
       updateViewportUnits();
+      if (hudBar && typeof hudBar._pvxSetVisible === "function") {
+        hudBar._pvxSetVisible(false);
+      }
     };
 
     const setFsButtonState = (btn) => {
@@ -1333,6 +1341,9 @@
         paused = !!on;
         document.body.classList.toggle("game-paused", paused);
         window.dispatchEvent(new CustomEvent(paused ? "playvex:pause" : "playvex:resume", { detail: { slug } }));
+        if (hudBar && typeof hudBar._pvxSetVisible === "function") {
+          hudBar._pvxSetVisible(true, { autoHideMs: paused ? 0 : 1200 });
+        }
       };
 
       const syncPauseUi = () => {
@@ -1359,6 +1370,62 @@
       });
       const bar = document.createElement("div");
       bar.className = "game-controls";
+      bar.dataset.visible = "true";
+      hudBar = bar;
+
+      let hideHudT = 0;
+      const isHudMode = () =>
+        document.body.classList.contains("game-fullscreen") ||
+        document.body.classList.contains("game-theater") ||
+        document.body.classList.contains("game-immersive");
+
+      const setHudVisible = (on, { autoHideMs = 0 } = {}) => {
+        bar.dataset.visible = on ? "true" : "false";
+        window.clearTimeout(hideHudT);
+        if (!on) return;
+        if (!isHudMode()) return;
+        if (paused) return;
+        if (!overlay.hidden) return;
+        if (autoHideMs > 0) {
+          hideHudT = window.setTimeout(() => {
+            if (!isHudMode()) return;
+            if (paused) return;
+            if (!overlay.hidden) return;
+            bar.dataset.visible = "false";
+          }, Math.max(500, autoHideMs));
+        }
+      };
+
+      bar._pvxSetVisible = setHudVisible;
+
+      const hudToggle = document.createElement("button");
+      hudToggle.type = "button";
+      hudToggle.className = "game-hud-toggle";
+      hudToggle.setAttribute("aria-label", "Toggle controls");
+      hudToggle.setAttribute("aria-pressed", "false");
+      hudToggle.textContent = "Controls";
+
+      const syncHudToggle = () => {
+        const open = bar.dataset.visible === "true";
+        hudToggle.dataset.active = open ? "true" : "false";
+        hudToggle.setAttribute("aria-pressed", open ? "true" : "false");
+      };
+
+      hudToggle.addEventListener("click", () => {
+        const open = bar.dataset.visible === "true";
+        setHudVisible(!open, { autoHideMs: open ? 0 : 2000 });
+        syncHudToggle();
+      });
+
+      gameWrap.addEventListener("pointerdown", (e) => {
+        if (!isHudMode()) return;
+        if (!e || e.target === hudToggle) return;
+        const r = gameWrap.getBoundingClientRect();
+        const y = e.clientY - r.top;
+        if (y > 88) return;
+        setHudVisible(true, { autoHideMs: 1600 });
+        syncHudToggle();
+      });
 
       const fsBtn = document.createElement("button");
       fsBtn.type = "button";
@@ -1435,6 +1502,8 @@
         immersiveBtn.dataset.active = on ? "true" : "false";
         immersiveBtn.setAttribute("aria-pressed", on ? "true" : "false");
         updateViewportUnits();
+        setHudVisible(true, { autoHideMs: 1400 });
+        syncHudToggle();
       });
 
       restartBtn.addEventListener("click", () => {
@@ -1453,6 +1522,8 @@
       helpBtn.addEventListener("click", () => {
         setPaused(true);
         syncPauseUi();
+        setHudVisible(true);
+        syncHudToggle();
 
         const resume = document.createElement("button");
         resume.type = "button";
@@ -1475,6 +1546,8 @@
       settingsBtn.addEventListener("click", () => {
         setPaused(true);
         syncPauseUi();
+        setHudVisible(true);
+        syncHudToggle();
 
         const wrap = document.createElement("div");
         wrap.style.display = "flex";
@@ -1554,6 +1627,7 @@
       bar.appendChild(helpBtn);
       bar.appendChild(restartBtn);
       gameWrap.appendChild(bar);
+      gameWrap.appendChild(hudToggle);
       gameWrap.appendChild(overlay);
 
       const onFsChange = () => {
@@ -1566,12 +1640,15 @@
           unlockPageScroll();
         }
         updateViewportUnits();
+        setHudVisible(true, { autoHideMs: 1400 });
+        syncHudToggle();
       };
       document.addEventListener("fullscreenchange", onFsChange);
       document.addEventListener("webkitfullscreenchange", onFsChange);
       document.addEventListener("MSFullscreenChange", onFsChange);
       onFsChange();
       syncPauseUi();
+      syncHudToggle();
       return bar;
     };
 

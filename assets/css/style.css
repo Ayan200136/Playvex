@@ -653,7 +653,47 @@ a:focus-visible,button:focus-visible{
   flex-wrap:wrap;
   justify-content:flex-end;
   max-width:calc(100% - 24px);
+  transition:opacity 180ms var(--ease), transform 180ms var(--ease);
 }
+
+.game-controls[data-visible="false"]{
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(-6px);
+}
+
+.game-controls[data-visible="true"] + .game-hud-toggle{
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(6px);
+}
+
+.game-hud-toggle{
+  position:absolute;
+  left:calc(12px + env(safe-area-inset-left, 0px));
+  bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index:11;
+  height:40px;
+  padding:0 12px;
+  border-radius:999px;
+  border:1px solid var(--border-subtle);
+  background:rgba(14,15,19,0.72);
+  color:var(--c-white-92);
+  font-size:0.85rem;
+  font-weight:650;
+  letter-spacing:.1px;
+  box-shadow:var(--shadow-hairline);
+  backdrop-filter:blur(10px);
+  touch-action:manipulation;
+  transition:opacity 180ms var(--ease), transform 180ms var(--ease);
+}
+
+.game-hud-toggle[data-active="true"]{
+  border-color:rgba(76,255,122,0.35);
+  background:rgba(76,255,122,0.12);
+}
+
+body:not(.game-immersive):not(.game-fullscreen):not(.game-theater) .game-hud-toggle{display:none}
 
 .game-control-btn{
   height:40px;
