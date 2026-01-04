@@ -616,7 +616,8 @@
   }
 
   function updateViewportUnits() {
-    const vh = window.innerHeight * 0.01;
+    const h = window.visualViewport && window.visualViewport.height ? window.visualViewport.height : window.innerHeight;
+    const vh = h * 0.01;
     document.documentElement.style.setProperty("--vh", `${vh}px`);
   }
 
@@ -1264,8 +1265,27 @@
       await fn.call(document);
     };
 
+    const isTheater = () => document.body.classList.contains("game-theater");
+    const enterTheater = () => {
+      document.body.classList.add("game-theater");
+      document.body.classList.add("game-immersive");
+      document.documentElement.classList.add("noscroll");
+      document.body.classList.add("noscroll");
+      lockPageScroll();
+      updateViewportUnits();
+    };
+
+    const exitTheater = () => {
+      document.body.classList.remove("game-theater");
+      document.body.classList.remove("game-immersive");
+      document.documentElement.classList.remove("noscroll");
+      document.body.classList.remove("noscroll");
+      unlockPageScroll();
+      updateViewportUnits();
+    };
+
     const setFsButtonState = (btn) => {
-      const on = !!fsEl();
+      const on = !!fsEl() || isTheater();
       btn.dataset.active = on ? "true" : "false";
       btn.setAttribute("aria-pressed", on ? "true" : "false");
       btn.textContent = on ? "Exit" : "Fullscreen";
@@ -1387,18 +1407,26 @@
 
       fsBtn.addEventListener("click", async () => {
         try {
-          if (!canFs()) {
-            showNotice("Fullscreen not supported on this device.");
+          if (isTheater()) {
+            exitTheater();
             return;
           }
 
           if (fsEl()) {
             await exitFs();
-          } else {
-            await requestFs();
+            return;
           }
+
+          if (!canFs()) {
+            enterTheater();
+            showNotice("Using game mode for fullscreen on this device.");
+            return;
+          }
+
+          await requestFs();
         } catch {
-          showNotice("Fullscreen failed. Try again.");
+          enterTheater();
+          showNotice("Using game mode for fullscreen on this device.");
         }
       });
 
@@ -1531,6 +1559,12 @@
       const onFsChange = () => {
         setFsButtonState(fsBtn);
         document.body.classList.toggle("game-fullscreen", !!fsEl());
+        if (fsEl()) {
+          document.body.classList.remove("game-theater");
+          document.documentElement.classList.remove("noscroll");
+          document.body.classList.remove("noscroll");
+          unlockPageScroll();
+        }
         updateViewportUnits();
       };
       document.addEventListener("fullscreenchange", onFsChange);
@@ -1561,6 +1595,10 @@
     updateViewportUnits();
     window.addEventListener("resize", updateViewportUnits, { passive: true });
     window.addEventListener("orientationchange", () => window.setTimeout(updateViewportUnits, 150), { passive: true });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", updateViewportUnits, { passive: true });
+      window.visualViewport.addEventListener("scroll", updateViewportUnits, { passive: true });
+    }
     initMenu();
     initTopbarScrollState();
     initAccountUi();

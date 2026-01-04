@@ -735,6 +735,8 @@ a:focus-visible,button:focus-visible{
  body.game-immersive .ad-zone{display:none}
  body.game-immersive .more-games{display:none}
  body.game-immersive .game-shell>div:first-child{display:none}
+ body.game-immersive .container{max-width:none;padding-left:0;padding-right:0}
+ body.game-immersive .game-shell{gap:0}
  body.game-immersive .page{padding-top:0}
  body.game-immersive .game-stage{max-height:calc(var(--vh, 1vh) * 100)}
 
@@ -742,13 +744,43 @@ a:focus-visible,button:focus-visible{
  body.game-fullscreen .ad-zone{display:none}
  body.game-fullscreen .more-games{display:none}
  body.game-fullscreen .game-shell>div:first-child{display:none}
+ body.game-fullscreen .container{max-width:none;padding-left:0;padding-right:0}
+ body.game-fullscreen .game-shell{gap:0}
  body.game-fullscreen .page{padding:0}
 
+ body.game-theater{background:#000}
+ body.game-theater .topbar{display:none}
+ body.game-theater .ad-zone{display:none}
+ body.game-theater .more-games{display:none}
+ body.game-theater .game-shell>div:first-child{display:none}
+ body.game-theater .page{padding:0}
+ body.game-theater .container{max-width:none;padding-left:0;padding-right:0}
+ body.game-theater .game-shell{gap:0}
+
+ body.game-theater .game-wrap{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  border-radius:0;
+  border:0;
+  box-shadow:none;
+ }
+
+ body.game-theater .game-controls{z-index:110}
+ body.game-theater .game-overlay{z-index:120}
+
+ body.game-theater .game-stage{
+  width:100vw;
+  height:calc(var(--vh, 1vh) * 100);
+  max-height:calc(var(--vh, 1vh) * 100);
+  aspect-ratio:auto;
+ }
+
 .game-wrap:fullscreen{border-radius:0;border:0;box-shadow:none}
-.game-wrap:fullscreen .game-stage{max-height:100vh}
+.game-wrap:fullscreen .game-stage{max-height:calc(var(--vh, 1vh) * 100)}
 
 .game-wrap:-webkit-full-screen{border-radius:0;border:0;box-shadow:none}
-.game-wrap:-webkit-full-screen .game-stage{max-height:100vh}
+.game-wrap:-webkit-full-screen .game-stage{max-height:calc(var(--vh, 1vh) * 100)}
 
 .more-games{margin-top:var(--space-xs)}
 .more-games__title{margin:0 0 var(--space-sm);font-size:var(--font-h3);font-weight:600}
