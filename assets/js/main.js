@@ -1065,6 +1065,124 @@
     }
 
     const stage = $("gameStage");
+
+    const gameWrap = stage ? stage.closest(".game-wrap") : null;
+    const gameShell = stage ? stage.closest(".game-shell") : null;
+    let noticeEl = null;
+    const ensureNotice = () => {
+      if (!gameShell) return null;
+      if (noticeEl && document.contains(noticeEl)) return noticeEl;
+      const el = document.createElement("div");
+      el.className = "notice";
+      el.id = "gameNotice";
+      el.hidden = true;
+      gameShell.insertBefore(el, gameShell.firstChild);
+      noticeEl = el;
+      return el;
+    };
+
+    const showNotice = (text, { lockMs = 2200 } = {}) => {
+      const el = ensureNotice();
+      if (!el) return;
+      el.textContent = String(text || "");
+      el.hidden = false;
+      window.clearTimeout(el._pvxT);
+      el._pvxT = window.setTimeout(() => {
+        el.hidden = true;
+      }, Math.max(800, lockMs));
+    };
+
+    const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement || null;
+    const canFs = () => !!(gameWrap && (gameWrap.requestFullscreen || gameWrap.webkitRequestFullscreen));
+    const requestFs = async () => {
+      if (!gameWrap) return;
+      const fn = gameWrap.requestFullscreen || gameWrap.webkitRequestFullscreen;
+      if (!fn) throw new Error("fullscreen_not_supported");
+      await fn.call(gameWrap);
+    };
+    const exitFs = async () => {
+      const fn = document.exitFullscreen || document.webkitExitFullscreen;
+      if (!fn) return;
+      await fn.call(document);
+    };
+
+    const setFsButtonState = (btn) => {
+      const on = !!fsEl();
+      btn.dataset.active = on ? "true" : "false";
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      btn.textContent = on ? "Exit" : "Fullscreen";
+    };
+
+    const ensureControls = () => {
+      if (!gameWrap) return null;
+      const existing = gameWrap.querySelector(".game-controls");
+      if (existing) return existing;
+      const bar = document.createElement("div");
+      bar.className = "game-controls";
+
+      const fsBtn = document.createElement("button");
+      fsBtn.type = "button";
+      fsBtn.className = "game-control-btn";
+      fsBtn.setAttribute("aria-label", "Toggle fullscreen");
+      fsBtn.setAttribute("aria-pressed", "false");
+      fsBtn.textContent = "Fullscreen";
+
+      const immersiveBtn = document.createElement("button");
+      immersiveBtn.type = "button";
+      immersiveBtn.className = "game-control-btn";
+      immersiveBtn.setAttribute("aria-label", "Toggle immersive mode");
+      immersiveBtn.setAttribute("aria-pressed", "false");
+      immersiveBtn.textContent = "Immersive";
+
+      const restartBtn = document.createElement("button");
+      restartBtn.type = "button";
+      restartBtn.className = "game-control-btn";
+      restartBtn.setAttribute("aria-label", "Restart game");
+      restartBtn.textContent = "Restart";
+
+      fsBtn.addEventListener("click", async () => {
+        try {
+          if (!canFs()) {
+            showNotice("Fullscreen not supported on this device.");
+            return;
+          }
+
+          if (fsEl()) {
+            await exitFs();
+          } else {
+            await requestFs();
+          }
+        } catch {
+          showNotice("Fullscreen failed. Try again.");
+        }
+      });
+
+      immersiveBtn.addEventListener("click", () => {
+        const on = document.body.classList.toggle("game-immersive");
+        immersiveBtn.dataset.active = on ? "true" : "false";
+        immersiveBtn.setAttribute("aria-pressed", on ? "true" : "false");
+        updateViewportUnits();
+      });
+
+      restartBtn.addEventListener("click", () => {
+        const ev = new CustomEvent("playvex:restart", { detail: { slug } });
+        window.dispatchEvent(ev);
+        window.location.reload();
+      });
+
+      bar.appendChild(fsBtn);
+      bar.appendChild(immersiveBtn);
+      bar.appendChild(restartBtn);
+      gameWrap.appendChild(bar);
+
+      const onFsChange = () => setFsButtonState(fsBtn);
+      document.addEventListener("fullscreenchange", onFsChange);
+      document.addEventListener("webkitfullscreenchange", onFsChange);
+      onFsChange();
+      return bar;
+    };
+
+    ensureControls();
     const desired = typeof meta.orientation === "string" ? meta.orientation : "portrait-primary";
 
     const tryLock = async () => {
