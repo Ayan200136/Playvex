@@ -84,6 +84,7 @@
   --menu-title-color:var(--c-white-92);
   --accent-zero:rgba(76,255,122,0.0);
   --accent-08:rgba(76,255,122,0.08);
+  --vh:1vh;
   --skeleton-sheen:linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
   --ad-border:rgba(255,255,255,0.18);
 }
@@ -256,6 +257,7 @@ a:focus-visible,button:focus-visible{
   background:var(--c-black-55);
   z-index:60;
   opacity:0;
+  touch-action:none;
   transition:opacity 160ms var(--ease);
 }
 
@@ -265,7 +267,8 @@ a:focus-visible,button:focus-visible{
   position:fixed;
   top:0;
   right:0;
-  height:100vh;
+  height:calc(var(--vh, 1vh) * 100);
+  max-height:100dvh;
   width:min(320px,88vw);
   background:linear-gradient(180deg,var(--surface-card),var(--bg-secondary));
   border-left:1px solid var(--border-subtle);
@@ -275,6 +278,11 @@ a:focus-visible,button:focus-visible{
   transition:transform 160ms var(--ease);
   display:flex;
   flex-direction:column;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  padding-top:env(safe-area-inset-top, 0px);
+  padding-bottom:env(safe-area-inset-bottom, 0px);
 }
 .menu[data-open="true"]{transform:translateX(0)}
 .menu__header{
@@ -605,7 +613,7 @@ a:focus-visible,button:focus-visible{
 .more-games{margin-top:var(--space-xs)}
 .more-games__title{margin:0 0 var(--space-sm);font-size:var(--font-h3);font-weight:600}
 
-.noscroll{overflow:hidden}
+.noscroll{overflow:hidden;overscroll-behavior:none}
 
 @media (prefers-reduced-motion: reduce){
   .hero__title,.hero__subtitle{animation:none;opacity:1;transform:none}

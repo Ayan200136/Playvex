@@ -534,6 +534,36 @@
     }
   }
 
+  function updateViewportUnits() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty("--vh", `${vh}px`);
+  }
+
+  function lockPageScroll() {
+    if (document.body.dataset.locked === "true") return;
+    const y = window.scrollY || window.pageYOffset || 0;
+    document.body.dataset.locked = "true";
+    document.body.dataset.scrollY = String(y);
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${y}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
+  }
+
+  function unlockPageScroll() {
+    if (document.body.dataset.locked !== "true") return;
+    const y = Number(document.body.dataset.scrollY || "0") || 0;
+    document.body.dataset.locked = "false";
+    document.body.dataset.scrollY = "";
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    document.body.style.width = "";
+    window.scrollTo(0, y);
+  }
+
   function readRecent() {
     try {
       const raw = window.localStorage.getItem(RECENT_KEY);
@@ -616,10 +646,12 @@
       menu.dataset.open = "true";
       document.documentElement.classList.add("noscroll");
       document.body.classList.add("noscroll");
+      lockPageScroll();
     } else {
       menu.dataset.open = "false";
       document.documentElement.classList.remove("noscroll");
       document.body.classList.remove("noscroll");
+      unlockPageScroll();
 
       window.setTimeout(() => {
         scrim.hidden = true;
@@ -1050,6 +1082,9 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
+    updateViewportUnits();
+    window.addEventListener("resize", updateViewportUnits, { passive: true });
+    window.addEventListener("orientationchange", () => window.setTimeout(updateViewportUnits, 150), { passive: true });
     initMenu();
     initTopbarScrollState();
     initAccountUi();
