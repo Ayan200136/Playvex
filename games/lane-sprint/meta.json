@@ -1,0 +1,8 @@
+{
+  "title": "Lane Sprint",
+  "slug": "lane-sprint",
+  "description": "Swipe left or right to change lanes. Stay alive as speed ramps up.",
+  "category": "runner",
+  "thumbnail": "thumb.jpg",
+  "orientation": "portrait-primary"
+}

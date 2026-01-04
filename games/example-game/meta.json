@@ -1,0 +1,8 @@
+{
+  "title": "Neon Dodge",
+  "slug": "example-game",
+  "description": "Dodge falling blocks and survive as long as you can. One hit ends the run, so stay sharp.",
+  "category": "arcade",
+  "thumbnail": "thumb.jpg",
+  "orientation": "portrait-primary"
+}

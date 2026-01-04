@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#0e0f13" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="description" content="Playvex is a premium, fast, and free mobile-first web game platform. Play instant games with no install." />
+  <title>Playvex — Play instant games. No install.</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <!-- Google Analytics placeholder: add GA script here -->
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar" role="banner">
+    <div class="topbar__inner">
+      <a class="brand" href="./" aria-label="Playvex home">
+        <svg class="brand__mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 12c0-4.4 3.6-8 8-8h8v8c0 4.4-3.6 8-8 8H4v-8Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+          <path d="M10 9.5 15 12l-5 2.5V9.5Z" fill="currentColor" />
+        </svg>
+        <span class="brand__text">Playvex</span>
+      </a>
+
+      <button class="icon-btn" type="button" id="menuButton" aria-label="Open menu" aria-controls="mobileMenu" aria-expanded="false">
+        <span class="icon-btn__lines" aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <div class="scrim" id="menuScrim" hidden></div>
+
+    <nav class="menu" id="mobileMenu" aria-label="Primary" hidden>
+      <div class="menu__header">
+        <div class="menu__title">Menu</div>
+        <button class="icon-btn" type="button" id="menuCloseButton" aria-label="Close menu">
+          <span class="icon-btn__x" aria-hidden="true"></span>
+        </button>
+      </div>
+      <a class="menu__link" href="./">Home</a>
+      <a class="menu__link" href="#featured-games">Games</a>
+      <a class="menu__link" href="about.html">About</a>
+
+      <div class="menu__section" aria-label="Account">
+        <div class="menu__section-title">Account</div>
+        <div class="menu__account">
+          <div class="menu__account-status" id="accountStatus">Progress saved on this device.</div>
+
+          <button class="btn menu__account-btn" type="button" id="accountGoogleBtn">Sign in with Google</button>
+          <button class="btn btn-secondary menu__account-btn" type="button" id="accountEmailToggleBtn">Use email</button>
+
+          <div class="menu__account-email" id="accountEmailWrap" hidden>
+            <input class="input" id="accountEmail" type="email" inputmode="email" autocomplete="email" placeholder="Email" />
+            <input class="input" id="accountPassword" type="password" autocomplete="current-password" placeholder="Password" />
+            <div class="menu__account-actions">
+              <button class="btn" type="button" id="accountEmailSignInBtn">Sign in</button>
+              <button class="btn btn-secondary" type="button" id="accountEmailSignUpBtn">Sign up</button>
+            </div>
+          </div>
+
+          <button class="btn btn-secondary menu__account-btn" type="button" id="accountSignOutBtn" hidden>Sign out</button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main" class="main" role="main">
+    <section class="hero" aria-label="Playvex introduction">
+      <div class="container">
+        <h1 class="hero__title">Play instant games. No install.</h1>
+        <p class="hero__subtitle">Fast, fun, and free web games for everyone.</p>
+      </div>
+    </section>
+
+    <section class="section" id="continue" aria-label="Continue playing" hidden>
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title">Continue</h2>
+        </div>
+        <div id="recentGrid" class="games-grid" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="section" id="featured-games" aria-label="Featured games">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title">Featured Games</h2>
+          <div class="section__tools" aria-label="Game controls">
+            <label class="field" for="searchInput">
+              <span class="field__label">Search</span>
+              <input class="input" id="searchInput" type="search" inputmode="search" autocomplete="off" placeholder="Search games" />
+            </label>
+
+            <label class="field" for="categorySelect">
+              <span class="field__label">Category</span>
+              <select class="select" id="categorySelect">
+                <option value="all">All</option>
+              </select>
+            </label>
+
+            <label class="field" for="sortSelect">
+              <span class="field__label">Sort</span>
+              <select class="select" id="sortSelect">
+                <option value="featured">Featured</option>
+                <option value="az">A–Z</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div id="gamesError" class="notice" role="status" hidden>Games temporarily unavailable</div>
+        <div id="gamesEmpty" class="notice" role="status" hidden>No games match your search.</div>
+        <div id="gamesGrid" class="games-grid" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" role="contentinfo">
+    <div class="container footer__inner">
+      <nav class="footer__links" aria-label="Footer">
+        <a href="about.html">About</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms of Service</a>
+      </nav>
+      <div class="footer__copy">© Playvex — All rights reserved</div>
+    </div>
+  </footer>
+
+  <!-- Future event tracking placeholder: add game play events here -->
+  <script defer src="assets/js/firebase-config.js"></script>
+  <script defer src="assets/js/main.js"></script>
+</body>
+</html>
