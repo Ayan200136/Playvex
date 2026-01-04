@@ -85,6 +85,14 @@
   resize();
 
   function preventDefault(e) {
+    if (paused) return;
+    if (!state.running) return;
+    const t = e && e.touches && e.touches[0];
+    if (t) {
+      const edge = 18;
+      const w = window.innerWidth || 0;
+      if (t.clientX <= edge || t.clientX >= w - edge) return;
+    }
     e.preventDefault();
   }
   canvas.addEventListener("touchstart", preventDefault, { passive: false });
@@ -93,8 +101,6 @@
 
   function restart() {
     state.running = true;
-    document.documentElement.classList.add("noscroll");
-    document.body.classList.add("noscroll");
     state.score = 0;
     state.t = 0;
     state.lastTs = 0;
@@ -105,8 +111,6 @@
 
   function endRun() {
     state.running = false;
-    document.documentElement.classList.remove("noscroll");
-    document.body.classList.remove("noscroll");
     state.best = Math.max(state.best, Math.floor(state.score));
 
     if (progress) {
@@ -137,6 +141,12 @@
   }
 
   canvas.addEventListener("pointerdown", (e) => {
+    if (paused) return;
+    if (e && e.pointerType === "touch") {
+      const edge = 18;
+      const w = window.innerWidth || 0;
+      if (e.clientX <= edge || e.clientX >= w - edge) return;
+    }
     state.swipeStartX = e.clientX;
     state.swipeStartT = performance.now();
 
@@ -146,6 +156,7 @@
   });
 
   canvas.addEventListener("pointerup", (e) => {
+    if (paused) return;
     if (state.swipeStartX == null) return;
     const dx = e.clientX - state.swipeStartX;
     const dt = performance.now() - state.swipeStartT;

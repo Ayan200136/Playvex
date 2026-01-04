@@ -726,16 +726,23 @@ a:focus-visible,button:focus-visible{
   aspect-ratio:9/16;
   max-height:72vh;
   display:block;
-  touch-action:none;
+  touch-action:manipulation;
   user-select:none;
   -webkit-user-select:none;
-}
+ }
 
-body.game-immersive .topbar{display:none}
-body.game-immersive .ad-zone{display:none}
-body.game-immersive .more-games{display:none}
-body.game-immersive .page{padding-top:0}
-body.game-immersive .game-stage{max-height:calc(var(--vh, 1vh) * 100)}
+ body.game-immersive .topbar{display:none}
+ body.game-immersive .ad-zone{display:none}
+ body.game-immersive .more-games{display:none}
+ body.game-immersive .game-shell>div:first-child{display:none}
+ body.game-immersive .page{padding-top:0}
+ body.game-immersive .game-stage{max-height:calc(var(--vh, 1vh) * 100)}
+
+ body.game-fullscreen .topbar{display:none}
+ body.game-fullscreen .ad-zone{display:none}
+ body.game-fullscreen .more-games{display:none}
+ body.game-fullscreen .game-shell>div:first-child{display:none}
+ body.game-fullscreen .page{padding:0}
 
 .game-wrap:fullscreen{border-radius:0;border:0;box-shadow:none}
 .game-wrap:fullscreen .game-stage{max-height:100vh}

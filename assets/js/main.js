@@ -1528,7 +1528,11 @@
       gameWrap.appendChild(bar);
       gameWrap.appendChild(overlay);
 
-      const onFsChange = () => setFsButtonState(fsBtn);
+      const onFsChange = () => {
+        setFsButtonState(fsBtn);
+        document.body.classList.toggle("game-fullscreen", !!fsEl());
+        updateViewportUnits();
+      };
       document.addEventListener("fullscreenchange", onFsChange);
       document.addEventListener("webkitfullscreenchange", onFsChange);
       onFsChange();

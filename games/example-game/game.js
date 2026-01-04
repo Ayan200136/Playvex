@@ -94,6 +94,14 @@
   }
 
   function preventDefault(e) {
+    if (paused) return;
+    if (!state.running) return;
+    const t = e && e.touches && e.touches[0];
+    if (t) {
+      const edge = 18;
+      const w = window.innerWidth || 0;
+      if (t.clientX <= edge || t.clientX >= w - edge) return;
+    }
     e.preventDefault();
   }
 
@@ -102,6 +110,12 @@
   canvas.addEventListener("touchend", preventDefault, { passive: false });
 
   canvas.addEventListener("pointerdown", (e) => {
+    if (paused) return;
+    if (e && e.pointerType === "touch") {
+      const edge = 18;
+      const w = window.innerWidth || 0;
+      if (e.clientX <= edge || e.clientX >= w - edge) return;
+    }
     state.pointerDown = true;
     state.pointerX = normalizeX(e.clientX);
 
@@ -111,6 +125,7 @@
   });
 
   canvas.addEventListener("pointermove", (e) => {
+    if (paused) return;
     if (!state.pointerDown) return;
     state.pointerX = normalizeX(e.clientX);
   });
@@ -126,8 +141,6 @@
 
   function restart() {
     state.running = true;
-    document.documentElement.classList.add("noscroll");
-    document.body.classList.add("noscroll");
     state.score = 0;
     state.time = 0;
     state.lastTs = 0;
@@ -139,8 +152,6 @@
 
   function endRun() {
     state.running = false;
-    document.documentElement.classList.remove("noscroll");
-    document.body.classList.remove("noscroll");
     state.best = Math.max(state.best, Math.floor(state.score));
 
     if (progress) {

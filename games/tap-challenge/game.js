@@ -84,6 +84,14 @@
   resize();
 
   function preventDefault(e) {
+    if (paused) return;
+    if (!state.playing) return;
+    const t = e && e.touches && e.touches[0];
+    if (t) {
+      const edge = 18;
+      const w = window.innerWidth || 0;
+      if (t.clientX <= edge || t.clientX >= w - edge) return;
+    }
     e.preventDefault();
   }
   canvas.addEventListener("touchstart", preventDefault, { passive: false });
@@ -92,8 +100,6 @@
 
   function start() {
     state.playing = true;
-    document.documentElement.classList.add("noscroll");
-    document.body.classList.add("noscroll");
     state.taps = 0;
     state.remaining = 10;
     state.lastTs = 0;
@@ -102,8 +108,6 @@
 
   function end() {
     state.playing = false;
-    document.documentElement.classList.remove("noscroll");
-    document.body.classList.remove("noscroll");
     state.best = Math.max(state.best, state.taps);
 
     if (progress) {
@@ -114,7 +118,13 @@
     }
   }
 
-  canvas.addEventListener("pointerdown", () => {
+  canvas.addEventListener("pointerdown", (e) => {
+    if (paused) return;
+    if (e && e.pointerType === "touch") {
+      const edge = 18;
+      const w = window.innerWidth || 0;
+      if (e.clientX <= edge || e.clientX >= w - edge) return;
+    }
     if (!state.playing) start();
     if (!state.playing) return;
 
