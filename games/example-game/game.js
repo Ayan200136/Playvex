@@ -18,6 +18,28 @@
   let dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
 
   const progress = window.PlayvexProgress || null;
+  const settings = window.PlayvexSettings || null;
+  let paused = false;
+
+  window.addEventListener("playvex:pause", (e) => {
+    const s = e && e.detail && typeof e.detail.slug === "string" ? e.detail.slug : "";
+    if (s && s !== "example-game") return;
+    paused = true;
+  });
+
+  window.addEventListener("playvex:resume", (e) => {
+    const s = e && e.detail && typeof e.detail.slug === "string" ? e.detail.slug : "";
+    if (s && s !== "example-game") return;
+    paused = false;
+  });
+
+  window.addEventListener("playvex:restart", (e) => {
+    const s = e && e.detail && typeof e.detail.slug === "string" ? e.detail.slug : "";
+    if (s && s !== "example-game") return;
+    if (e && typeof e.preventDefault === "function") e.preventDefault();
+    paused = false;
+    restart();
+  });
 
   const state = {
     w: canvas.width,
@@ -297,12 +319,18 @@
 
   function loop(ts) {
     if (!state.lastTs) state.lastTs = ts;
+    if (paused) {
+      state.lastTs = ts;
+      render();
+      requestAnimationFrame(loop);
+      return;
+    }
+
     const dt = clamp((ts - state.lastTs) / 1000, 0, 0.05);
     state.lastTs = ts;
 
     if (state.running) update(dt);
     render();
-
     requestAnimationFrame(loop);
   }
 

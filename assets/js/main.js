@@ -10,9 +10,53 @@
 
   const RECENT_KEY = "playvex_recent_v1";
   const PROGRESS_KEY = "playvex_progress_v1";
+  const SETTINGS_KEY = "playvex_settings_v1";
 
   const THUMB_PLACEHOLDER =
     "data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20720%20405'%3E%3Cdefs%3E%3ClinearGradient%20id%3D'g'%20x1%3D'0'%20y1%3D'0'%20x2%3D'1'%20y2%3D'1'%3E%3Cstop%20stop-color%3D'%230e0f13'%20offset%3D'0'/%3E%3Cstop%20stop-color%3D'%2313161f'%20offset%3D'1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D'720'%20height%3D'405'%20fill%3D'url(%23g)'/%3E%3Cpath%20d%3D'M300%20155l150%2047.5-150%2047.5z'%20fill%3D'%234cff7a'%20opacity%3D'.92'/%3E%3C/svg%3E";
+
+  function readSettingsStore() {
+    try {
+      const raw = window.localStorage.getItem(SETTINGS_KEY);
+      const data = safeJsonParse(raw || "");
+      if (!data || typeof data !== "object") return {};
+      return data;
+    } catch {
+      return {};
+    }
+  }
+
+  function writeSettingsStore(store) {
+    try {
+      window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(store));
+    } catch {
+      // ignore
+    }
+  }
+
+  function getSetting(key, fallback) {
+    const store = readSettingsStore();
+    if (!store || typeof store !== "object") return fallback;
+    if (!(key in store)) return fallback;
+    return store[key];
+  }
+
+  function setSetting(key, value) {
+    const store = readSettingsStore();
+    store[key] = value;
+    writeSettingsStore(store);
+    window.dispatchEvent(new CustomEvent("playvex:settings", { detail: { key, value } }));
+  }
+
+  function applyMotionPreference() {
+    const pref = getSetting("reducedMotion", null);
+    const value = pref == null
+      ? !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+      : !!pref;
+    document.body.classList.toggle("reduced-motion", value);
+  }
+
+  applyMotionPreference();
 
   const SITE_BASE = (() => {
     const parts = window.location.pathname.split("/").filter(Boolean);
@@ -114,6 +158,21 @@
 
   function canAutoUpdateStatus() {
     return !account.uiLockUntil || Date.now() >= account.uiLockUntil;
+  }
+
+  function progressSummaryLine() {
+    const saved = listLocalProgressSlugs().length;
+    const last = readRecent()[0] || "";
+    const lastLabel = last ? last.replace(/[-_]+/g, " ") : "";
+    if (saved === 0 && !lastLabel) return "";
+    if (saved > 0 && lastLabel) return `Saved progress: ${saved} game${saved === 1 ? "" : "s"} • Last played: ${lastLabel}`;
+    if (saved > 0) return `Saved progress: ${saved} game${saved === 1 ? "" : "s"}`;
+    return `Last played: ${lastLabel}`;
+  }
+
+  function withProgressSummary(text) {
+    const extra = progressSummaryLine();
+    return extra ? `${text}\n${extra}` : text;
   }
 
   function setAuthUiEnabled(enabled) {
@@ -225,7 +284,7 @@
 
         if (!user) {
           setSignedInUi(false);
-          if (canAutoUpdateStatus()) setAccountStatus("Guest mode. Progress saved on this device.");
+          if (canAutoUpdateStatus()) setAccountStatus(withProgressSummary("Guest mode. Progress saved on this device."));
           return;
         }
 
@@ -236,7 +295,7 @@
           const label = user.isAnonymous
             ? "Guest mode. Progress saved on this device. Sign in to sync across devices."
             : `${who} Progress will sync across devices.`;
-          setAccountStatus(label);
+          setAccountStatus(withProgressSummary(label));
         }
 
         try {
@@ -338,7 +397,7 @@
     if (!cfg) {
       setAuthUiEnabled(false);
       setSignedInUi(false);
-      setAccountStatus("Sync not configured yet. Progress saved on this device.");
+      setAccountStatus(withProgressSummary("Sync not configured yet. Progress saved on this device."));
       return;
     }
 
@@ -351,7 +410,7 @@
 
     const initInIdle = () => {
       ensureFirebaseReady().catch(() => {
-        setAccountStatus("Sync unavailable right now. Progress saved on this device.");
+        setAccountStatus(withProgressSummary("Sync unavailable right now. Progress saved on this device."));
         setAuthUiEnabled(false);
       });
     };
@@ -364,6 +423,10 @@
 
     emailToggle.addEventListener("click", () => {
       emailWrap.hidden = !emailWrap.hidden;
+      emailToggle.textContent = emailWrap.hidden ? "Use email" : "Hide email";
+      if (!emailWrap.hidden) {
+        try { emailEl.focus(); } catch { /* ignore */ }
+      }
     });
 
     googleBtn.addEventListener("click", async () => {
@@ -503,7 +566,7 @@
             // Ignore; local progress still works.
           }
         }
-        setAccountStatus("Signed out. Progress saved on this device.");
+        setAccountStatus(withProgressSummary("Signed out. Progress saved on this device."));
       } catch {
         setAccountStatus("Sign out failed.");
       }
@@ -522,6 +585,21 @@
     merge(slug, patch) {
       mergeLocalProgress(slug, patch);
       scheduleCloudWrite(slug);
+    }
+  };
+
+  window.PlayvexSettings = {
+    get(key, fallback) {
+      if (typeof key !== "string" || !key) return fallback;
+      return getSetting(key, fallback);
+    },
+    set(key, value) {
+      if (typeof key !== "string" || !key) return;
+      setSetting(key, value);
+      if (key === "reducedMotion") applyMotionPreference();
+    },
+    all() {
+      return Object.assign({}, readSettingsStore());
     }
   };
 
@@ -777,6 +855,29 @@
     p.className = "card__desc";
     p.textContent = meta.description || "";
 
+    const metaRow = document.createElement("div");
+    metaRow.className = "card__meta";
+    const cat = (meta.category || "").toString().trim();
+    const catLabel = cat
+      ? cat.split(/[-_\s]+/g).filter(Boolean).map((x) => x.slice(0, 1).toUpperCase() + x.slice(1)).join(" ")
+      : "";
+    const orientation = (meta.orientation || "").toString().toLowerCase().includes("landscape") ? "Landscape" : "Portrait";
+    if (catLabel) {
+      const el = document.createElement("div");
+      el.innerHTML = `<b>${catLabel}</b> • ${orientation}`;
+      metaRow.appendChild(el);
+    } else {
+      const el = document.createElement("div");
+      el.innerHTML = `<b>${orientation}</b>`;
+      metaRow.appendChild(el);
+    }
+    const saved = getLocalProgress(meta.slug);
+    if (saved) {
+      const el = document.createElement("div");
+      el.innerHTML = `<b>Saved</b>`;
+      metaRow.appendChild(el);
+    }
+
     const actions = document.createElement("div");
     actions.className = "card__actions";
 
@@ -791,6 +892,7 @@
 
     body.appendChild(h3);
     body.appendChild(p);
+    body.appendChild(metaRow);
     body.appendChild(actions);
 
     card.appendChild(thumbWrap);
@@ -800,6 +902,40 @@
   }
 
   function wireNavigation(containerEl) {
+    const prefetched = new Set();
+    const prefetch = (href) => {
+      if (!href || prefetched.has(href)) return;
+      prefetched.add(href);
+      const l = document.createElement("link");
+      l.rel = "prefetch";
+      l.href = href;
+      document.head.appendChild(l);
+    };
+
+    const prefetchForSlug = (slug) => {
+      if (!slug) return;
+      prefetch(`${SITE_BASE}games/${slug}/`);
+      prefetch(`${SITE_BASE}games/${slug}/game.js`);
+    };
+
+    containerEl.addEventListener("mouseover", (e) => {
+      const t = e.target;
+      if (!t || !(t instanceof HTMLElement)) return;
+      const link = t.closest("a[data-slug]");
+      if (!link) return;
+      const slug = link.getAttribute("data-slug") || "";
+      prefetchForSlug(slug);
+    });
+
+    containerEl.addEventListener("focusin", (e) => {
+      const t = e.target;
+      if (!t || !(t instanceof HTMLElement)) return;
+      const link = t.closest("a[data-slug]");
+      if (!link) return;
+      const slug = link.getAttribute("data-slug") || "";
+      prefetchForSlug(slug);
+    });
+
     containerEl.addEventListener("click", (e) => {
       const t = e.target;
       if (!t || !(t instanceof HTMLElement)) return;
@@ -872,6 +1008,17 @@
       grid.innerHTML = "";
       if (error) error.hidden = false;
       return;
+    }
+
+    const heroRandomBtn = $("heroRandomBtn");
+    if (heroRandomBtn) {
+      heroRandomBtn.addEventListener("click", () => {
+        if (!Array.isArray(slugs) || slugs.length === 0) return;
+        const slug = slugs[Math.floor(Math.random() * slugs.length)];
+        if (!slug) return;
+        pushRecent(slug);
+        window.location.href = `${SITE_BASE}games/${slug}/`;
+      });
     }
 
     const metas = [];
@@ -1128,6 +1275,68 @@
       if (!gameWrap) return null;
       const existing = gameWrap.querySelector(".game-controls");
       if (existing) return existing;
+
+      const overlay = document.createElement("div");
+      overlay.className = "game-overlay";
+      overlay.hidden = true;
+
+      const overlayCard = document.createElement("div");
+      overlayCard.className = "game-overlay__card";
+      overlay.appendChild(overlayCard);
+
+      const setOverlay = ({ title, text, body, actions } = {}) => {
+        overlayCard.innerHTML = "";
+        const h = document.createElement("h3");
+        h.className = "game-overlay__title";
+        h.textContent = title || "";
+        overlayCard.appendChild(h);
+
+        if (text) {
+          const p = document.createElement("p");
+          p.className = "game-overlay__text";
+          p.textContent = text;
+          overlayCard.appendChild(p);
+        }
+
+        if (body) overlayCard.appendChild(body);
+
+        if (actions) {
+          const a = document.createElement("div");
+          a.className = "game-overlay__actions";
+          for (const el of actions) a.appendChild(el);
+          overlayCard.appendChild(a);
+        }
+      };
+
+      let paused = false;
+      const setPaused = (on) => {
+        paused = !!on;
+        document.body.classList.toggle("game-paused", paused);
+        window.dispatchEvent(new CustomEvent(paused ? "playvex:pause" : "playvex:resume", { detail: { slug } }));
+      };
+
+      const syncPauseUi = () => {
+        pauseBtn.dataset.active = paused ? "true" : "false";
+        pauseBtn.setAttribute("aria-pressed", paused ? "true" : "false");
+        pauseBtn.textContent = paused ? "Resume" : "Pause";
+      };
+
+      const closeOverlay = () => {
+        overlay.hidden = true;
+      };
+
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) closeOverlay();
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape") return;
+        if (!overlay.hidden) {
+          closeOverlay();
+          return;
+        }
+        if (paused) setPaused(false);
+      });
       const bar = document.createElement("div");
       bar.className = "game-controls";
 
@@ -1150,6 +1359,31 @@
       restartBtn.className = "game-control-btn";
       restartBtn.setAttribute("aria-label", "Restart game");
       restartBtn.textContent = "Restart";
+
+      const pauseBtn = document.createElement("button");
+      pauseBtn.type = "button";
+      pauseBtn.className = "game-control-btn";
+      pauseBtn.setAttribute("aria-label", "Toggle pause");
+      pauseBtn.setAttribute("aria-pressed", "false");
+      pauseBtn.textContent = "Pause";
+
+      const helpBtn = document.createElement("button");
+      helpBtn.type = "button";
+      helpBtn.className = "game-control-btn";
+      helpBtn.setAttribute("aria-label", "How to play");
+      helpBtn.textContent = "Help";
+
+      const settingsBtn = document.createElement("button");
+      settingsBtn.type = "button";
+      settingsBtn.className = "game-control-btn";
+      settingsBtn.setAttribute("aria-label", "Settings");
+      settingsBtn.textContent = "Settings";
+
+      pauseBtn.addEventListener("click", () => {
+        setPaused(!paused);
+        closeOverlay();
+        syncPauseUi();
+      });
 
       fsBtn.addEventListener("click", async () => {
         try {
@@ -1176,20 +1410,129 @@
       });
 
       restartBtn.addEventListener("click", () => {
-        const ev = new CustomEvent("playvex:restart", { detail: { slug } });
-        window.dispatchEvent(ev);
-        window.location.reload();
+        const ev = new CustomEvent("playvex:restart", { detail: { slug }, cancelable: true });
+        const ok = window.dispatchEvent(ev);
+        if (ok) window.location.reload();
+      });
+
+      const helpTextBySlug = {
+        "example-game": "Drag to move. Dodge the blocks. Tap to restart after a hit.",
+        "aim-pop": "Tap targets before they fade. Miss too many and the run ends.",
+        "lane-sprint": "Swipe left or right to switch lanes. Dodge blocks as speed ramps up.",
+        "tap-challenge": "Tap as fast as you can for 10 seconds. Beat your best."
+      };
+
+      helpBtn.addEventListener("click", () => {
+        setPaused(true);
+        syncPauseUi();
+
+        const resume = document.createElement("button");
+        resume.type = "button";
+        resume.className = "btn";
+        resume.textContent = "Resume";
+        resume.addEventListener("click", () => {
+          setPaused(false);
+          syncPauseUi();
+          closeOverlay();
+        });
+
+        setOverlay({
+          title: "How to play",
+          text: helpTextBySlug[slug] || "Play instantly. Tap to start, and use touch controls to survive and score.",
+          actions: [resume]
+        });
+        overlay.hidden = false;
+      });
+
+      settingsBtn.addEventListener("click", () => {
+        setPaused(true);
+        syncPauseUi();
+
+        const wrap = document.createElement("div");
+        wrap.style.display = "flex";
+        wrap.style.flexDirection = "column";
+        wrap.style.gap = "10px";
+        wrap.style.marginTop = "10px";
+
+        const makeToggle = ({ key, title, desc, fallback = true } = {}) => {
+          const row = document.createElement("label");
+          row.className = "toggle";
+
+          const left = document.createElement("div");
+          left.className = "toggle__label";
+          const b = document.createElement("b");
+          b.textContent = title || key;
+          const s = document.createElement("span");
+          s.textContent = desc || "";
+          left.appendChild(b);
+          left.appendChild(s);
+
+          const input = document.createElement("input");
+          input.className = "toggle__input";
+          input.type = "checkbox";
+          input.checked = !!window.PlayvexSettings.get(key, fallback);
+
+          input.addEventListener("change", () => {
+            window.PlayvexSettings.set(key, !!input.checked);
+          });
+
+          row.appendChild(left);
+          row.appendChild(input);
+          return row;
+        };
+
+        wrap.appendChild(makeToggle({
+          key: "vibrate",
+          title: "Vibration",
+          desc: "Haptic feedback on taps",
+          fallback: true
+        }));
+
+        wrap.appendChild(makeToggle({
+          key: "reducedMotion",
+          title: "Reduced motion",
+          desc: "Less animations and motion",
+          fallback: false
+        }));
+
+        const resume = document.createElement("button");
+        resume.type = "button";
+        resume.className = "btn";
+        resume.textContent = "Resume";
+        resume.addEventListener("click", () => {
+          setPaused(false);
+          syncPauseUi();
+          closeOverlay();
+        });
+
+        const close = document.createElement("button");
+        close.type = "button";
+        close.className = "btn btn-secondary";
+        close.textContent = "Close";
+        close.addEventListener("click", () => closeOverlay());
+
+        setOverlay({
+          title: "Settings",
+          body: wrap,
+          actions: [resume, close]
+        });
+        overlay.hidden = false;
       });
 
       bar.appendChild(fsBtn);
       bar.appendChild(immersiveBtn);
+      bar.appendChild(pauseBtn);
+      bar.appendChild(settingsBtn);
+      bar.appendChild(helpBtn);
       bar.appendChild(restartBtn);
       gameWrap.appendChild(bar);
+      gameWrap.appendChild(overlay);
 
       const onFsChange = () => setFsButtonState(fsBtn);
       document.addEventListener("fullscreenchange", onFsChange);
       document.addEventListener("webkitfullscreenchange", onFsChange);
       onFsChange();
+      syncPauseUi();
       return bar;
     };
 

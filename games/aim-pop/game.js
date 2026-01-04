@@ -17,6 +17,31 @@
 
   let dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
 
+  const GAME_SLUG = "aim-pop";
+  const progress = window.PlayvexProgress || null;
+  const settings = window.PlayvexSettings || null;
+  let paused = false;
+
+  window.addEventListener("playvex:pause", (e) => {
+    const s = e && e.detail && typeof e.detail.slug === "string" ? e.detail.slug : "";
+    if (s && s !== GAME_SLUG) return;
+    paused = true;
+  });
+
+  window.addEventListener("playvex:resume", (e) => {
+    const s = e && e.detail && typeof e.detail.slug === "string" ? e.detail.slug : "";
+    if (s && s !== GAME_SLUG) return;
+    paused = false;
+  });
+
+  window.addEventListener("playvex:restart", (e) => {
+    const s = e && e.detail && typeof e.detail.slug === "string" ? e.detail.slug : "";
+    if (s && s !== GAME_SLUG) return;
+    if (e && typeof e.preventDefault === "function") e.preventDefault();
+    paused = false;
+    restart();
+  });
+
   const state = {
     w: canvas.width,
     h: canvas.height,
@@ -29,6 +54,12 @@
     spawnT: 0,
     targets: []
   };
+
+  if (progress) {
+    const saved = progress.get(GAME_SLUG);
+    const best = saved && typeof saved.best === "number" ? saved.best : 0;
+    state.best = Math.max(0, Math.floor(best));
+  }
 
   function clamp(v, a, b) {
     return Math.max(a, Math.min(b, v));
@@ -75,6 +106,13 @@
     document.documentElement.classList.remove("noscroll");
     document.body.classList.remove("noscroll");
     state.best = Math.max(state.best, Math.floor(state.score));
+
+    if (progress) {
+      progress.merge(GAME_SLUG, {
+        best: state.best,
+        lastScore: Math.floor(state.score)
+      });
+    }
   }
 
   function spawnTarget(level) {
@@ -124,7 +162,7 @@
     if (hit) {
       const level = Math.min(20, Math.floor(state.score / 8));
       state.score += 1 + Math.floor(level / 3);
-      if (navigator.vibrate) {
+      if (navigator.vibrate && (!settings || settings.get("vibrate", true))) {
         try { navigator.vibrate(10); } catch { /* ignore */ }
       }
     } else {
@@ -234,6 +272,13 @@
 
   function loop(ts) {
     if (!state.lastTs) state.lastTs = ts;
+    if (paused) {
+      state.lastTs = ts;
+      render();
+      requestAnimationFrame(loop);
+      return;
+    }
+
     const dt = clamp((ts - state.lastTs) / 1000, 0, 0.05);
     state.lastTs = ts;
 

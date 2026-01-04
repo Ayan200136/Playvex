@@ -19,6 +19,31 @@
 
   let dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
 
+  const GAME_SLUG = "tap-challenge";
+  const progress = window.PlayvexProgress || null;
+  const settings = window.PlayvexSettings || null;
+  let paused = false;
+
+  window.addEventListener("playvex:pause", (e) => {
+    const s = e && e.detail && typeof e.detail.slug === "string" ? e.detail.slug : "";
+    if (s && s !== GAME_SLUG) return;
+    paused = true;
+  });
+
+  window.addEventListener("playvex:resume", (e) => {
+    const s = e && e.detail && typeof e.detail.slug === "string" ? e.detail.slug : "";
+    if (s && s !== GAME_SLUG) return;
+    paused = false;
+  });
+
+  window.addEventListener("playvex:restart", (e) => {
+    const s = e && e.detail && typeof e.detail.slug === "string" ? e.detail.slug : "";
+    if (s && s !== GAME_SLUG) return;
+    if (e && typeof e.preventDefault === "function") e.preventDefault();
+    paused = false;
+    start();
+  });
+
   const state = {
     w: canvas.width,
     h: canvas.height,
@@ -29,6 +54,12 @@
     lastTs: 0,
     flash: 0
   };
+
+  if (progress) {
+    const saved = progress.get(GAME_SLUG);
+    const best = saved && typeof saved.best === "number" ? saved.best : 0;
+    state.best = Math.max(0, Math.floor(best));
+  }
 
   function clamp(v, a, b) {
     return Math.max(a, Math.min(b, v));
@@ -74,6 +105,13 @@
     document.documentElement.classList.remove("noscroll");
     document.body.classList.remove("noscroll");
     state.best = Math.max(state.best, state.taps);
+
+    if (progress) {
+      progress.merge(GAME_SLUG, {
+        best: state.best,
+        lastScore: state.taps
+      });
+    }
   }
 
   canvas.addEventListener("pointerdown", () => {
@@ -83,7 +121,7 @@
     state.taps += 1;
     state.flash = 1;
 
-    if (navigator.vibrate) {
+    if (navigator.vibrate && (!settings || settings.get("vibrate", true))) {
       try { navigator.vibrate(8); } catch { /* ignore */ }
     }
   });
@@ -101,6 +139,8 @@
 
   function update(dt) {
     state.flash = Math.max(0, state.flash - dt * 6);
+
+    if (paused) return;
 
     if (!state.playing) return;
 
@@ -184,6 +224,13 @@
 
   function loop(ts) {
     if (!state.lastTs) state.lastTs = ts;
+    if (paused) {
+      state.lastTs = ts;
+      render();
+      requestAnimationFrame(loop);
+      return;
+    }
+
     const dt = clamp((ts - state.lastTs) / 1000, 0, 0.05);
     state.lastTs = ts;
 
