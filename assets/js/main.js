@@ -1251,16 +1251,16 @@
       }, Math.max(800, lockMs));
     };
 
-    const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement || null;
-    const canFs = () => !!(gameWrap && (gameWrap.requestFullscreen || gameWrap.webkitRequestFullscreen));
+    const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement || null;
+    const canFs = () => !!(gameWrap && (gameWrap.requestFullscreen || gameWrap.webkitRequestFullscreen || gameWrap.msRequestFullscreen));
     const requestFs = async () => {
       if (!gameWrap) return;
-      const fn = gameWrap.requestFullscreen || gameWrap.webkitRequestFullscreen;
+      const fn = gameWrap.requestFullscreen || gameWrap.webkitRequestFullscreen || gameWrap.msRequestFullscreen;
       if (!fn) throw new Error("fullscreen_not_supported");
       await fn.call(gameWrap);
     };
     const exitFs = async () => {
-      const fn = document.exitFullscreen || document.webkitExitFullscreen;
+      const fn = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
       if (!fn) return;
       await fn.call(document);
     };
@@ -1569,6 +1569,7 @@
       };
       document.addEventListener("fullscreenchange", onFsChange);
       document.addEventListener("webkitfullscreenchange", onFsChange);
+      document.addEventListener("MSFullscreenChange", onFsChange);
       onFsChange();
       syncPauseUi();
       return bar;
