@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Playvex">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0e0f13"/>
+      <stop offset="1" stop-color="#13161f"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="url(#bg)"/>
+  <path d="M112 256c0-88.4 71.6-160 160-160h160v160c0 88.4-71.6 160-160 160H112V256Z" fill="none" stroke="#e8ebf2" stroke-width="28" stroke-linejoin="round" opacity="0.92"/>
+  <path d="M226 204l112 52-112 52v-104Z" fill="#4cff7a" filter="url(#glow)"/>
+</svg>

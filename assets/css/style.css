@@ -507,6 +507,9 @@ a:focus-visible,button:focus-visible{
 .card__actions{margin-top:auto;display:flex;gap:var(--space-sm)}
 
 .btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
   height:44px;
   min-width:120px;
   padding:0 20px;
@@ -516,6 +519,7 @@ a:focus-visible,button:focus-visible{
   color:var(--text-primary);
   font-weight:700;
   cursor:pointer;
+  text-decoration:none;
   box-shadow:var(--shadow-btn);
   transition:transform 180ms var(--ease), background 180ms var(--ease), border-color 180ms var(--ease), box-shadow 180ms var(--ease), filter 180ms var(--ease);
   touch-action:manipulation;

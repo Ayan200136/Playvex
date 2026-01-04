@@ -11,6 +11,9 @@
   const RECENT_KEY = "playvex_recent_v1";
   const PROGRESS_KEY = "playvex_progress_v1";
 
+  const THUMB_PLACEHOLDER =
+    "data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20720%20405'%3E%3Cdefs%3E%3ClinearGradient%20id%3D'g'%20x1%3D'0'%20y1%3D'0'%20x2%3D'1'%20y2%3D'1'%3E%3Cstop%20stop-color%3D'%230e0f13'%20offset%3D'0'/%3E%3Cstop%20stop-color%3D'%2313161f'%20offset%3D'1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D'720'%20height%3D'405'%20fill%3D'url(%23g)'/%3E%3Cpath%20d%3D'M300%20155l150%2047.5-150%2047.5z'%20fill%3D'%234cff7a'%20opacity%3D'.92'/%3E%3C/svg%3E";
+
   const SITE_BASE = (() => {
     const parts = window.location.pathname.split("/").filter(Boolean);
     if (parts[0] === "games") return "../../";
@@ -758,7 +761,7 @@
     img.src = `${SITE_BASE}games/${meta.slug}/${meta.thumbnail}`;
 
     img.addEventListener("error", () => {
-      img.remove();
+      img.src = THUMB_PLACEHOLDER;
     }, { once: true });
 
     thumbWrap.appendChild(img);
@@ -777,14 +780,14 @@
     const actions = document.createElement("div");
     actions.className = "card__actions";
 
-    const playBtn = document.createElement("button");
-    playBtn.className = "btn";
-    playBtn.type = "button";
-    playBtn.textContent = "Play";
-    playBtn.dataset.href = `${SITE_BASE}games/${meta.slug}/`;
-    playBtn.setAttribute("aria-label", meta.title ? `Play ${meta.title}` : "Play game");
+    const playLink = document.createElement("a");
+    playLink.className = "btn";
+    playLink.href = `${SITE_BASE}games/${meta.slug}/`;
+    playLink.textContent = "Play";
+    playLink.dataset.slug = meta.slug;
+    playLink.setAttribute("aria-label", meta.title ? `Play ${meta.title}` : "Play game");
 
-    actions.appendChild(playBtn);
+    actions.appendChild(playLink);
 
     body.appendChild(h3);
     body.appendChild(p);
@@ -800,6 +803,14 @@
     containerEl.addEventListener("click", (e) => {
       const t = e.target;
       if (!t || !(t instanceof HTMLElement)) return;
+
+      const link = t.closest("a[data-slug]");
+      if (link) {
+        const slug = link.getAttribute("data-slug");
+        if (slug) pushRecent(slug);
+        return;
+      }
+
       const btn = t.closest("button[data-href]");
       if (!btn) return;
       const href = btn.getAttribute("data-href");

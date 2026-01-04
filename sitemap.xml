@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://playvex.pages.dev/</loc>
+  </url>
+  <url>
+    <loc>https://playvex.pages.dev/about.html</loc>
+  </url>
+  <url>
+    <loc>https://playvex.pages.dev/privacy.html</loc>
+  </url>
+  <url>
+    <loc>https://playvex.pages.dev/terms.html</loc>
+  </url>
+  <url>
+    <loc>https://playvex.pages.dev/games/example-game/</loc>
+  </url>
+  <url>
+    <loc>https://playvex.pages.dev/games/tap-challenge/</loc>
+  </url>
+  <url>
+    <loc>https://playvex.pages.dev/games/lane-sprint/</loc>
+  </url>
+  <url>
+    <loc>https://playvex.pages.dev/games/aim-pop/</loc>
+  </url>
+</urlset>
