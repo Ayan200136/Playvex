@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#0e0f13" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="description" content="Play Neon Rail 3D on Playvex. A fast 3D-style endless runner with jump and slide controls." />
+  <title>Neon Rail 3D — Playvex</title>
+  <link rel="canonical" href="https://playvex.pages.dev/games/neon-rail-3d/" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Playvex" />
+  <meta property="og:title" content="Neon Rail 3D — Playvex" />
+  <meta property="og:description" content="Play Neon Rail 3D on Playvex. A fast 3D-style endless runner with jump and slide controls." />
+  <meta property="og:url" content="https://playvex.pages.dev/games/neon-rail-3d/" />
+  <meta property="og:image" content="https://playvex.pages.dev/og.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Neon Rail 3D — Playvex" />
+  <meta name="twitter:description" content="Play Neon Rail 3D on Playvex. A fast 3D-style endless runner with jump and slide controls." />
+  <meta name="twitter:image" content="https://playvex.pages.dev/og.svg" />
+  <link rel="stylesheet" href="../../assets/css/style.css" />
+</head>
+<body data-game-slug="neon-rail-3d">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar" role="banner">
+    <div class="topbar__inner">
+      <a class="brand" href="../../" aria-label="Playvex home">
+        <svg class="brand__mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 12c0-4.4 3.6-8 8-8h8v8c0 4.4-3.6 8-8 8H4v-8Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+          <path d="M10 9.5 15 12l-5 2.5V9.5Z" fill="currentColor" />
+        </svg>
+        <span class="brand__text">Playvex</span>
+      </a>
+      <a class="btn topbar__cta" href="../../">Home</a>
+    </div>
+  </header>
+
+  <main id="main" class="main" role="main">
+    <section class="section" aria-label="Game">
+      <div class="container page game-shell">
+        <div>
+          <h1 id="gameTitle">Neon Rail 3D</h1>
+          <p id="gameDesc">Swipe or arrow keys to move, tap/↑ to jump, and ↓ to slide under hazards.</p>
+        </div>
+
+        <div class="ad-zone" aria-label="Advertisement">
+          <!-- AD ZONE 1 (SAFE): Place AdSense code here in production. -->
+        </div>
+
+        <div class="game-wrap" aria-label="Game area">
+          <canvas id="gameStage" class="game-stage" width="720" height="1280"></canvas>
+        </div>
+
+        <div class="ad-zone" aria-label="Advertisement">
+          <!-- AD ZONE 2 (SAFE): Place AdSense code here in production. -->
+        </div>
+
+        <section class="more-games" aria-label="More games">
+          <h2 class="more-games__title">More Games</h2>
+          <div id="moreGamesGrid" class="games-grid"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script defer src="../../assets/js/firebase-config.js"></script>
+  <script defer src="../../assets/js/main.js"></script>
+  <script defer src="game.js"></script>
+</body>
+</html>
