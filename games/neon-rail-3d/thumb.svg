@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 405" role="img" aria-labelledby="title desc">
+  <title id="title">Neon Rail 3D thumbnail</title>
+  <desc id="desc">A neon runner lane with bright rails and obstacles.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#080914"/>
+      <stop offset=".55" stop-color="#11162b"/>
+      <stop offset="1" stop-color="#161414"/>
+    </linearGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#20243a"/>
+      <stop offset="1" stop-color="#11131f"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="720" height="405" fill="url(#sky)"/>
+  <circle cx="360" cy="92" r="62" fill="#63e7ff" opacity=".24" filter="url(#glow)"/>
+  <path d="M272 118h176l196 260H76z" fill="url(#road)" stroke="#62f5ff" stroke-width="5"/>
+  <path d="M316 118 238 378M404 118l78 260M360 118v260" fill="none" stroke="#ffffff" stroke-opacity=".18" stroke-width="4"/>
+  <g filter="url(#glow)">
+    <path d="M130 342h460" stroke="#c6f9ff" stroke-width="10" stroke-linecap="round"/>
+    <path d="M173 286h374M214 238h292M250 198h220" stroke="#62f5ff" stroke-width="5" stroke-linecap="round" opacity=".78"/>
+  </g>
+  <rect x="321" y="247" width="78" height="100" rx="12" fill="#1987ff"/>
+  <rect x="333" y="261" width="54" height="18" rx="5" fill="#ffffff" opacity=".95"/>
+  <rect x="465" y="247" width="56" height="42" rx="6" fill="#ff5b5b"/>
+  <circle cx="242" cy="210" r="30" fill="#ffc85e"/>
+  <path d="M202 210h80" stroke="#ffffff" stroke-opacity=".65" stroke-width="8" stroke-linecap="round"/>
+</svg>

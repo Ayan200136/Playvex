@@ -1516,6 +1516,7 @@
         "example-game": "Drag to move. Dodge the blocks. Tap to restart after a hit.",
         "aim-pop": "Tap targets before they fade. Miss too many and the run ends.",
         "lane-sprint": "Swipe left or right to switch lanes. Dodge blocks as speed ramps up.",
+        "neon-rail-3d": "Swipe left or right to switch lanes. Tap or press up to jump, and swipe down or press down to slide.",
         "tap-challenge": "Tap as fast as you can for 10 seconds. Beat your best."
       };
 
