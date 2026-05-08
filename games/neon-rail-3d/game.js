@@ -27,6 +27,7 @@
     horizonY: 0,
     touchX: null,
     touchY: null,
+    ignoreNextClick: false,
     jumpVel: 0,
     jumpHeight: 0,
     slideTimer: 0,
@@ -372,8 +373,8 @@
       ctx.font = `${24 * dpr}px system-ui, -apple-system, Segoe UI, sans-serif`;
       ctx.fillStyle = "#b9d7ff";
       const hint = state.score > 0
-        ? "Tap to retry • Swipe to move • ↑ jump • ↓ slide"
-        : "Tap to start • Swipe to move • ↑ jump • ↓ slide";
+        ? "Tap to retry | Swipe to move | Up jump | Down slide"
+        : "Tap to start | Swipe to move | Up jump | Down slide";
       ctx.fillText(hint, state.w * 0.5, state.h * 0.43);
       ctx.textAlign = "left";
     }
@@ -411,6 +412,7 @@
     if (paused) return;
     if (!state.running) {
       resetRun();
+      state.ignoreNextClick = true;
       return;
     }
     state.touchX = e.clientX;
@@ -449,6 +451,10 @@
   });
 
   canvas.addEventListener("click", () => {
+    if (state.ignoreNextClick) {
+      state.ignoreNextClick = false;
+      return;
+    }
     if (!state.running && !paused) {
       resetRun();
       return;
